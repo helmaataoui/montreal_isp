@@ -1,166 +1,98 @@
-<!doctype html>
-<html xmlns:ng="http://angularjs.org" id="ng-app" ng-app="myApp">
-<head>
-	<title>Comparatif des FAI &agrave; Montr&eacute;al / Montreal ISP Comparison</title>
-	
-	<link href='http://fonts.googleapis.com/css?family=Titillium+Web:400,600' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" type="text/css" href="css/styles.css">
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
 
-	<!--[if lte IE 8]> <script src="js/json2.js"></script> <![endif]-->
-	<script src="js/angular.min.js"></script>
-    <script src="js/angular-translate.min.js"></script>
-	<script src="js/controller.js"></script>
+    <link rel="stylesheet" href="stylesheets/core.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
 
-</head>
-<body ng-controller="PlanListCtrl">
+    <script type="text/javascript" src="javascripts/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>Montreal isp by helmaataoui</title>
+  </head>
 
-<div id="social" style="position: fixed; top: 0; left: 0; border: 0;z-index:100;padding:5px;">
-<div ng-switch on="isFrench">
-    <button class="lang_button" ng-switch-when='true' ng-click="changeLanguage('en')">{{ 'BTN_CHANGE_LANG_ENG' | translate }}</button>
-    <button class="lang_button" ng-switch-when='false' ng-click="changeLanguage('fr')">{{ 'BTN_CHANGE_LANG_FR' | translate }}</button>
-</div>
-</div>
+  <body>
+    <a id="forkme_banner" href="https://github.com/helmaataoui/montreal_isp">View on GitHub</a>
+    <div class="shell">
 
-<noscript>
-<div style="height: 100%; width: 100%;top: 0; position:absolute; left: 0; border: 0; z-index:200;background:#FFFFFF;color:red;">
-<center><h2>Javascript est n&eacute;cessaire. / Javascript is required.</h2></center>
-</div>
-</noscript>
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>Montreal isp</h1>
+            <h2>Utility tool to compare Internet plans for Montreal.</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
 
- <center>
-
-  <h1>{{ 'TITLE' | translate }}</h1>
-
-
-
-     <form name="criteria" novalidate>
-         <div class="criterion">
- 	<fieldset>
-	 	<legend>{{ 'SELECTION_CRITERION' | translate }}</legend>
-	 	
-	 	<center>
- 	<table class="criteria">
-		<tr><td>
-	 		<b>{{ 'MINIMUM_REQUIREMENTS' | translate }}</b><br/>
-            {{ 'DOWNLOAD_SPEED' | translate }} (Mbps) : <input type="number" size="6" ng-model="min_down_speed" name="min_down_speed" min="0" max="100" value="0" integer /><br/>
-            {{ 'BANDWIDTH' | translate }} (GB) : <input type="number" size="6" ng-model="min_download_limit" name="min_download_limit" min="0" max="100" value="0" integer />
-	 		
- 		
- 		</td>
-        <td></td>
- 		<td>
- 		
-	 		<b>{{ 'BUDGET' | translate }}</b><br/>
-            {{ 'MAXIMUM_MONTHLY_FEE' | translate }} ({{ 'DOLLAR_MONTH' | translate }}) : <input type="number" size="6" ng-model="montly_fee" name="montly_fee" min="0" max="200" integer /><br/>
-	 		
- 		</td>
-        <td></td>
- 		<td>
-	 		<b>{{ 'ORDER_BY' | translate }}</b><br/>
-	 		
-	 		<input type="radio" ng-model="sort" name="order_by" id="order_by_price" value="order_by_price" ng-click="predicate = ['i_price','down_speed','limit'];" ng-checked="true">
-	 		<label for="order_by_price">{{ 'LOWEST_PRICE' | translate }}</label><br/>
-	 		
-	      	<input type="radio" ng-model="sort" name="order_by" id="order_by_limit" value="order_by_limit" ng-click="predicate = ['limit','i_price','down_speed'];">
-	      	<label for="order_by_limit">{{ 'HIGHEST_BANDWIDTH_LIMIT' | translate }}</label><br/>
-	      	
-	      	<input type="radio" ng-model="sort" name="order_by" id="order_by_down_speed" value="order_by_down_speed" ng-click="predicate = ['down_speed','i_price','limit'];">
-	      	<label for="order_by_speed">{{ 'FASTEST_SPEED' | translate }}</label><br/>
-	 		
- 		</td></tr>
- 	</table>
- 	</center>
- 	</fieldset>
-             </div>
- 	
- 	</form>
-  <br/>
-  <table class='plans'>
-  	<th></th>
-  	<th>{{ 'PLAN_NAME' | translate }}</th>
-  	<th>{{ 'DOWNLOAD' | translate }}<br/><small>(Mbps)</small></th>
-  	<th>{{ 'UPLOAD' | translate }}<br/><small>(Mbps)</small></th>
-  	<th>{{ 'BANDWIDTH_LIMIT' | translate }}<br/><small>({{ 'GB_MONTH' | translate }})</small></th>
-  	<th>{{ 'MONTHLY_FEE' | translate }}<br/><small>({{ 'DOLLAR_MONTH' | translate }})</small></th>
-  	<th></th>
-  	
-    <tr ng-repeat="plan in plans | filter:criteriaMatch() | orderBy:predicate:true"  ng-class-odd="'tr_odd'">
-      <td><img src="{{plan.icon}}" height="16" width="16"/></td>
-      <td style="text-align:left">{{plan.isp}} {{plan.name}}</td>
-      <td>{{plan.down_speed}}</td>
-      <td>{{plan.up_speed}}</td>
-      <td>{{(plan.limit == null) && '&#8734;' || plan.limit}}</td>
-      <td>{{plan.price}}</td>
-      <td><a href="{{plan.link}}" target="_blank">{{ 'MORE_DETAILS' | translate }}</a></td>
-    </tr>
-    
-    <tr ng-hide="(plans | filter:criteriaMatch()).length">
-    	<td colspan="7">
-    		<h3>{{ 'NO_PLAN_FOUND' | translate }} :(<br/>{{ 'NO_PLAN_FOUND_TIP' | translate }}</h3>
-    	</td>
-    </tr>
-  </table>
+      <section id="downloads">
+        <span class="inner">
+          <a href="https://github.com/helmaataoui/montreal_isp/zipball/master" class="zip"><em>download</em> .ZIP</a><a href="https://github.com/helmaataoui/montreal_isp/tarball/master" class="tgz"><em>download</em> .TGZ</a>
+        </span>
+      </section>
 
 
+      <span class="banner-fix"></span>
 
-  </center>
 
-<br/>
-<div ng-bind-html-unsafe="'FOOTNOTES' | translate" class="footer">
-</div>
+      <section id="main_content">
+        <h3>
+<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
 
-  <!--
-  Other resources:
-  http://www.dslreports.com/gbu/
-  -->
+<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
 
-<!-- Social links -->
-<div id="social" style="position: fixed; bottom: 0; left: 0; border: 0;z-index:100;padding:10px;padding-bottom:100px;width:130px;">
-    <div class="social_box">
-    <b>{{ 'SHARE_MSG' | translate }}</b><br/>
-    <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en">Tweet</a><br/>
-    <div class="g-plusone"></div><br/>
-    <div class="fb-like" data-href="http://h3xstream.github.io/montreal_isp/" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false" data-font="lucida grande"></div><br/>
-    <script type="text/javascript" src="http://www.reddit.com/static/button/button1.js"></script>
+<pre><code>$ cd your_repo_root/repo_name
+$ git fetch origin
+$ git checkout gh-pages
+</code></pre>
+
+<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+
+<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+
+<h3>
+<a id="rather-drive-stick" class="anchor" href="#rather-drive-stick" aria-hidden="true"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+
+<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+
+<h3>
+<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+
+<h3>
+<a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+
+<p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <p>this project by <a href="https://github.com/helmaataoui">helmaataoui</a> can be found on <a href="https://github.com/helmaataoui/montreal_isp">GitHub</a></p>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
     </div>
-</div>
 
-
-<!-- Google Plus -->
-<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
-
-<!-- Facebook -->
-<div id="fb-root"></div>
-<script>(function (d, s, id) {
- var js, fjs = d.getElementsByTagName(s)[0];
- if (d.getElementById(id)) return;
- js = d.createElement(s);
- js.id = id;
- js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
- fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-
-<!-- Twitter -->
-<script>!function (d, s, id) {
- var js, fjs = d.getElementsByTagName(s)[0];
- if (!d.getElementById(id)) {
-     js = d.createElement(s);
-     js.id = id;
-     js.src = "https://platform.twitter.com/widgets.js";
-     fjs.parentNode.insertBefore(js, fjs);
- }
-}(document, "script", "twitter-wjs");</script>
-
-<!-- Analytics -->
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-34839255-3', 'h3xstream.github.io');
-  ga('send', 'pageview');
-
-</script>
-</body>
+    
+  </body>
 </html>
